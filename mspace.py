@@ -124,18 +124,11 @@ your distance function.
 Installation
 .............
 
-.. _Psyco: http://psyco.sourceforge.net/
-
-This file is a stand-alone module for Python 2.4 and later which you
+This file is a stand-alone module for Python 3.9 and later which you
 only have to save somewhere in your ``PYTHONPATH``. [#pythonpath]_ No
 installation is necessary. The only tight dependencies are the modules
 ``sys``, ``random`` and ``weakref`` which are most probably already
 included in your Python installation.
-
-If you are using this on a 32 Bit i386 machine running Windows or Linux,
-you probably also want to install Psyco_ which speeds up execution times
-quite noticeably (in exchange for only a slightly increased memory
-usage). Psyco will be used automatically if it is available.
 
 .. [#pythonpath] Run ``python -c "import sys; print sys.path"`` to learn
   where Python currently looks for modules.
@@ -960,10 +953,10 @@ class MetricTree(object):
         try:
             distance = self._func(self._values[0], obj)
             dist_ctr += 1
-        except IndexError, e:
+        except IndexError as e:
             sys.stderr.write("Node is empty, cannot calculate distance!\n")
             raise e
-        except Exception, e:
+        except Exception as e:
             raise UnindexableObjectError(e, "Cannot calculate distance"
                     + " between objects %s and %s using %s" \
                         % (self._values[0], obj, self._func))
@@ -1016,7 +1009,7 @@ class MetricTree(object):
             for node in child.iternodes():
                 yield node
 
-    def __nonzero__(self):
+    def __bool__(self):
         """
 
         Return True if this node contains any objects.
@@ -1142,7 +1135,7 @@ class BKTree(MetricTree):
 
     def _get_child_candidates(self, distance, min_dist, max_dist):
         assert( min_dist <= max_dist )
-        return (child for dist, child in self._children.iteritems()
+        return (child for dist, child in self._children.items()
                 if distance - max_dist <= dist <= distance + max_dist)
 
     def __children(self):
@@ -1211,7 +1204,7 @@ class FastBKTree(object):
             dist_ctr += 1
             if min_dist <= distance <= max_dist:
                 result.append(node[-1])
-            candidates.extend( child for dist, child in node.iteritems()
+            candidates.extend( child for dist, child in node.items()
                 if distance - max_dist <= dist <= distance + max_dist
                     and dist != -1)
         return result
@@ -1239,12 +1232,12 @@ class FastBKTree(object):
             elif len(neighbours) == num:
                 max_dist = max([n[1] for n in neighbours])
                 candidates.extend(
-                    child for dist, child in node.iteritems()
+                    child for dist, child in node.items()
                     if distance - max_dist <= dist <= distance + max_dist
                         and dist != -1)
             else:
                 candidates.extend(child for child, dist in
-                        node.iteritems() if child != 1)
+                        node.items() if child != 1)
         return neighbours
 
 
@@ -1532,7 +1525,7 @@ def levenshtein(x, y):
     if n > m:
         x, y = y, x        # switch m and n so that n
         m, n = n, m        # is the smaller one (saves space for cur and prev)
-    cur = range(n+1)
+    cur = list(range(n+1))
     prev = [0] * (n+1)
     for i, char_x in enumerate(x):
         prev[0] = i+1
@@ -1562,19 +1555,10 @@ def tokenizer(textfile, separator=None):
             yield token.upper()
     try:
         textfile.close()
-    except AttributeError, e:
+    except AttributeError as e:
         pass
 
 dist_ctr = 0
-
-try:
-    import psyco
-    psyco.bind(levenshtein)
-    psyco.bind(VPTree)
-    psyco.bind(BKTree)
-    psyco.bind(FastBKTree)
-except ImportError, e:
-    sys.stderr.write("Psyco not available, proceeding without it.\n")
 
 if __name__ == '__main__':
     import codecs, time
@@ -1584,11 +1568,11 @@ if __name__ == '__main__':
     t = BKTree()
     t.construct(names, levenshtein)
     f.close()
-    print type(t)
-    s = raw_input("press enter")
-    print "t height: %s" % t.height
-    print "t size: %s" % len(t)
-    print "t nodes %s" % t.num_nodes
+    print(type(t))
+    #s = input("press enter")
+    print("t height: %s" % t.height)
+    print("t size: %s" % len(t))
+    print("t nodes %s" % t.num_nodes)
 
     #print "results: %s " % t.search("MARTIN", 1)
 
@@ -1600,6 +1584,6 @@ if __name__ == '__main__':
     for i in range(0, 10):
         t.search(names.pop(), 1)
     end = time.time()
-    print end - start
+    print(end - start)
 
 # vim: set et ts=4 sw=4 tw=72 nu:
